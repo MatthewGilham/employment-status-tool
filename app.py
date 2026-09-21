@@ -1,3 +1,5 @@
+"""Gradio interface for the employment status analysis tool."""
+
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
@@ -8,6 +10,8 @@ from textwrap import dedent
 from assessment import *
 import examples
 import gradio as gr
+
+
 
 def single_assess(
     substitution_clause,
@@ -33,8 +37,11 @@ def single_assess(
     practical_bar,
     paid_for_time_or_completion,
 ):
+    """Assess one engagement from the form. Yields a loading message, then the result. Parameter order must match the inputs list below."""
+    # Dropdown text → Optional[bool]; "no clause" means no substitution right exists
     fettered_map = {"no clause": None, "yes": True, "no": False}
     yield "### ⏳ Assessing…\n\nThis usually takes about ten seconds."
+    # Build an Engagement from form values; numbers arrive as floats, dropdowns as strings
     e = Engagement(
         engagement_id="Manual entry",
         substitution_clause=substitution_clause,
@@ -63,6 +70,7 @@ def single_assess(
     yield format_assessment(run(e))
 
 def batch_assess(file):
+    """Assess every engagement in an uploaded CSV, streaming each result as it completes."""
     yield "### ⏳ Assessing…\n\nThis usually takes about ten seconds."
     engagements = load_engagements(file)
     text = ""
@@ -73,6 +81,7 @@ def batch_assess(file):
         text += "\n\n---\n\n"
         yield text
 
+# Black with cyan accent. The _dark variants force the same look whatever the browser's colour scheme.
 theme = gr.themes.Base(
     primary_hue="cyan",
     neutral_hue="slate",
@@ -163,7 +172,7 @@ with gr.Blocks(
                 example_labels = ["Example 1", "Example 2"]
             )
 
-        go_single = gr.Button("Assess")
+        go_single = gr.Button("Assess", variant="primary")
         out_single = gr.Markdown()
 
         go_single.click(
@@ -182,4 +191,4 @@ with gr.Blocks(
         )
 
 if __name__ == "__main__":
-    ui.launch(inbrowser=True)
+    ui.launch(share=True, inbrowser=True, theme=theme)

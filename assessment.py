@@ -61,11 +61,10 @@ class Engagement:
     paid_for_time_or_completion: PaidForTimeOrCompletionEnum
     substitution_fettered: Optional[bool] = None
 
-
+#To load in external csv files
 def load_engagements(path):
     df = pd.read_csv(path)
     engagement = []
-
 
     #In the for loop _ is calling the row number each time and then row is the information
     #What Df is - is the copy of the file contents uploaded loaded into memory  df.iloc[0] pulls out one row. row["engagement_id"] pulls one cell from that row.
@@ -99,13 +98,6 @@ def load_engagements(path):
     return engagement
 
 
-
-#How to call from the list
-# e_from_list = (engagement[3])
-# print(e_from_list.engagement_id)
-# print(e_from_list.paid_for_time_or_completion)
-
-
 #Gate Outcome Class
 class GateOutcome(str, Enum):
     PASS = "pass"
@@ -120,17 +112,18 @@ class GateResult:
     evidence: str
     contradiction: Optional[str] = None
 
-
 #Factor Strength class
 class FactorStrength(str, Enum):
     STRONG = "strong"
     MODERATE = "moderate"
     WEAK = "weak"
+
 #Factor Direction class
 class FactorDirection(str, Enum):
     EMPLOYMENT = "employment"
     SELFEMPLOYMENT = "self employment"
     NEUTRAL = "neutral"
+
 #Factor Result
 @dataclass
 class FactorResult:
@@ -140,7 +133,7 @@ class FactorResult:
     evidence: str
     sufficiency: str
 
-
+#Deterministic function for equipment provider question no api call needed, simply uses multiple choice ENUM to decide factor result
 def assess_equipment(engagement):
     if engagement.who_provide_equipment==EquipmentProvider.CLIENT:
         return FactorResult(
@@ -167,6 +160,7 @@ def assess_equipment(engagement):
                 sufficiency="assessable",
             )
 
+#Deterministic function for payment related questions no api call needed, simply uses multiple choice ENUM to decide factor result
 def payment(engagement):
     if engagement.paid_for_time_or_completion == PaidForTimeOrCompletionEnum.TIME:
         return FactorResult(
@@ -193,7 +187,7 @@ def payment(engagement):
             sufficiency="assessable",
         )
 
-
+#Deterministic function for in business on own account questions no api call needed, simply uses int value to decide factor result
 def in_business_on_own_account(engagement):
     indicators = 0 
     clients = ""
@@ -259,11 +253,7 @@ def in_business_on_own_account(engagement):
         )
 
 
-    # total_engagement_length: int
-    # extension_count: int
-    # exclusivity_clause: bool
-    # practical_bar: str
-
+#Deterministic function for exclusivity and duration questions no api call needed, simply uses int value to decide factor result
 def exclusivity_and_duration(engagement):
     indicators = 0
     engagement_length = ""
@@ -331,12 +321,12 @@ openrouter = OpenAI(
 
  
 # model_gpt = "openai/gpt-5.6-luna"    #Decent speed 22 in 3min 10s
-model_gpt = "google/gemini-3.5-flash-lite"     #Fastest by far 54.1s for all 22 
+model_gpt = "google/gemini-3.5-flash-lite"     #Fastest by far 54.1s for all 22, but moderately expensive due to high amount of API calls used
 # model_gpt = "deepseek/deepseek-v4.1-flash"   Deep Seek Was insanely slow over 1min 30 for 1 out of 22 
 
 
-system_prompt_gate1 = prompts.system_prompt_gate1
 
+#Function used for user input in API callout, to provide assess gate 1 API call out with necessary information
 def gate_1_facts(engagement):
     return f"""Contract states a right of substitution: {engagement.substitution_clause}
 Right is fettered: {engagement.substitution_fettered}
@@ -345,8 +335,9 @@ Who would pay a substitute: {engagement.substitute_payment.value}
 Account of substitution in practice:
 {engagement.substitution_attempted}"""
 
-
+#API call out for gate 1 personal service result, uses relevant law from law_content.py and detailed prompt from prompts.py
 def assess_gate_1(engagement):
+    system_prompt_gate1 = prompts.system_prompt_gate1
     messages_gate1 = [{"role": "system", "content": system_prompt_gate1},
       {"role": "user", "content": gate_1_facts(engagement)}]
     last_error = None
@@ -375,18 +366,17 @@ def assess_gate_1(engagement):
 
 
 
-#AI Integration for Gate 2: Control Test
 
-system_prompt_gate2 = prompts.system_prompt_gate2
-
+#Function used for user input in API callout, to provide assess gate 2 API call out with necessary information
 def gate_2_facts(engagement):
     return f"""Who decides what work and what order: {engagement.decides_what_work_and_what_order}
 Who decides how work is performed: {engagement.decides_how_work_performed}
 Who sets the hours and location: {engagement.hours_and_location_set}
 Report to a manager or not:{engagement.report_to_a_manager}
 """
-
+#API call out for gate 2 control test result, uses relevant law from law_content.py and detailed prompt from prompts.py
 def assess_gate_2(engagement):
+    system_prompt_gate2 = prompts.system_prompt_gate2
     messages_gate2 = [{"role": "system", "content": system_prompt_gate2},
       {"role": "user", "content": gate_2_facts(engagement)}]
     last_error = None
@@ -412,18 +402,17 @@ def assess_gate_2(engagement):
         )
 
 
-#AI integration for the remaining 2 factors
-#AI integration for financial risk
 
-system_prompt_financial_risk = prompts.system_prompt_financial_risk
-
+#AI integration for financial risk one of the two factors requiring LLM call out
+#Function used for user input in API callout, to provide financial risk factor API call out with necessary information
 def factor_financial_facts(engagement):
     return f"""
     Does defective work need correcting: {engagement.defective_work_corrected}
     Can they make a loss on engagement: {engagement.loss_on_engagement}
     """
-
+#API call for assessing financial risk factor
 def assess_factor_financial(engagement):
+    system_prompt_financial_risk = prompts.system_prompt_financial_risk
     messages_factor_financial = [{"role": "system", "content": system_prompt_financial_risk},
       {"role": "user", "content": factor_financial_facts(engagement)}]
     last_error = None
@@ -454,16 +443,15 @@ def assess_factor_financial(engagement):
     )
 
 #AI Integration for organisation test
-system_prompt_organisation = prompts.system_prompt_organisation
-
 def factor_organisation_facts(engagement):
     return f"""
     Are they presented as part of the organisation: {engagement.presented_as_part_of_organisation}
     Do they have staff benefits or training: {engagement.staff_benefits_training_management}
     """
 
-
+#API call for organisation factor 
 def assess_factor_organisation(engagement):
+    system_prompt_organisation = prompts.system_prompt_organisation
     messages_factor_organisation = [
         {"role": "system", "content": system_prompt_organisation},
         {"role": "user", "content": factor_organisation_facts(engagement)}
@@ -495,7 +483,7 @@ def assess_factor_organisation(engagement):
     )
 
 
-#Now creating band enum 
+#Now creating band enum to provide overall analysis of all factors and gates providing an outcome of likely employment status
 class Band(str, Enum):
     STRONG_EMPLOYMENT = "strong employment"
     LIKELY_EMPLOYMENT = "likely employment"
@@ -505,21 +493,16 @@ class Band(str, Enum):
 
 
 #Determine band LLM call (final result)
-
-
-system_prompt_band = prompts.system_prompt_band
-
 def band_facts(results):
     text = ""
     for r in results:
         text += f"Factor: {r.factor}. Direction: {r.direction.value}. Strength: {r.strength.value}. Sufficiency: {r.sufficiency}"
         text += "\n"
-
     return text
 
-
-
+#Uses results from run function to provide an overall result
 def determine_band(results):
+    system_prompt_band = prompts.system_prompt_band
     messages = [{"role": "system", "content": system_prompt_band},
       {"role": "user", "content": band_facts(results)}]
     last_error = None
@@ -537,8 +520,7 @@ def determine_band(results):
     return Band.BORDERLINE, f"Band could not be determined after 3 attempts: {last_error}"
 
 
-
-
+#Dataclass used for formatting assessment results
 @dataclass
 class Assessment:
     gate1: GateResult
@@ -547,6 +529,8 @@ class Assessment:
     band: Optional[Band] = None
     results: list = field(default_factory=list)
 
+
+# Sequential gateway: gate 1, then gate 2, then the six factors. A failed gate stops the analysis, since there can be no contract of service. Run provides results for determine band function
 def run(engagement):
     results = []
     g1 = assess_gate_1(engagement)
