@@ -1,20 +1,8 @@
 """Gradio interface for the employment status analysis tool."""
-
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional
-import os
-import json
-import prompts
-from textwrap import dedent
 from assessment import *
 import examples
 import gradio as gr
 import styles
-
-
-
-
 
 def single_assess(
     substitution_clause,
@@ -175,4 +163,4 @@ with gr.Blocks(
         )
 
 if __name__ == "__main__":
-    ui.launch(share=True, inbrowser=True, theme=styles.THEME, css=styles.CSS)
+    ui.launch(share=True, inbrowser=True, theme=styles.PURPLE_THEME, css=styles.PURPLE_CSS)
