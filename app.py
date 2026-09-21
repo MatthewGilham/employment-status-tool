@@ -10,6 +10,9 @@ from textwrap import dedent
 from assessment import *
 import examples
 import gradio as gr
+import styles
+
+
 
 
 
@@ -81,27 +84,8 @@ def batch_assess(file):
         text += "\n\n---\n\n"
         yield text
 
-# Black with cyan accent. The _dark variants force the same look whatever the browser's colour scheme.
-theme = gr.themes.Base(
-    primary_hue="cyan",
-    neutral_hue="slate",
-    font=gr.themes.GoogleFont("Space Grotesk"),
-).set(
-    body_background_fill="#000000",
-    body_background_fill_dark="#000000",
-    block_background_fill="#0e1214",
-    block_background_fill_dark="#0e1214",
-    block_border_color="#1c2427",
-    block_border_color_dark="#1c2427",
-    block_radius="4px",
-    block_shadow="none",
-    button_primary_background_fill="#06b6d4",
-    button_primary_background_fill_dark="#06b6d4",
-    button_primary_text_color="#000000",
-)
 
 with gr.Blocks(
-    theme = theme,
     title="Employment status analysis") as ui: 
     gr.Markdown("# Employment status analysis")
 
@@ -191,4 +175,4 @@ with gr.Blocks(
         )
 
 if __name__ == "__main__":
-    ui.launch(share=True, inbrowser=True, theme=theme)
+    ui.launch(share=True, inbrowser=True, theme=styles.THEME, css=styles.CSS)
