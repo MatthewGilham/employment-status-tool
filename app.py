@@ -163,4 +163,4 @@ with gr.Blocks(
         )
 
 if __name__ == "__main__":
-    ui.launch(share=True, inbrowser=True, theme=styles.PURPLE_THEME, css=styles.PURPLE_CSS)
+    ui.launch(theme=styles.PURPLE_THEME, css=styles.PURPLE_CSS)
