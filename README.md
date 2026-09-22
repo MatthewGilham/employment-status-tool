@@ -1,12 +1,12 @@
 ---
-
-## title: Employment Status Assessment
+title: Employment Status Assessment
 emoji: ⚖️
 colorFrom: purple
 colorTo: indigo
 sdk: gradio
 app_file: app.py
 pinned: false
+---
 
 # Employment Status Analysis Tool
 
