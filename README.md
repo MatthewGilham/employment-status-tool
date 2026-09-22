@@ -1,3 +1,13 @@
+---
+
+## title: Employment Status Assessment
+emoji: ⚖️
+colorFrom: purple
+colorTo: indigo
+sdk: gradio
+app_file: app.py
+pinned: false
+
 # Employment Status Analysis Tool
 
 An AI-assisted tool that analyses whether a working arrangement looks like employment or self-employment, using the tests UK courts apply in employment status and IR35 cases.
@@ -8,6 +18,8 @@ It takes the facts of an engagement, runs them through a structured legal framew
 
 ---
 
+
+
 ## Why I built it
 
 Employment status is a judgement, not a calculation. In *Lee Ting Sang v Chung Chi-Keung* [1990], the court warned against applying a mechanical test, and HMRC's own CEST tool has been criticised for returning "undetermined" on hard cases.
@@ -15,6 +27,8 @@ Employment status is a judgement, not a calculation. In *Lee Ting Sang v Chung C
 I wanted to see whether an LLM could help with the part that needs reading and interpretation, while the structure of the legal test stayed explicit, rule-based and explainable.
 
 ---
+
+
 
 ## How it works
 
@@ -30,14 +44,16 @@ Condition 3: six factors  →  banded conclusion
 
 **The six factors** (drawing on *Market Investigations v Minister of Social Security* [1969]):
 
-| Factor | Assessed by |
-|---|---|
-| In business on own account | Rules |
-| Equipment | Rules |
-| Exclusivity and duration | Rules |
-| Payment basis | Rules |
-| Financial risk | LLM |
-| Integration | LLM |
+
+| Factor                     | Assessed by |
+| -------------------------- | ----------- |
+| In business on own account | Rules       |
+| Equipment                  | Rules       |
+| Exclusivity and duration   | Rules       |
+| Payment basis              | Rules       |
+| Financial risk             | LLM         |
+| Integration                | LLM         |
+
 
 Each factor returns a **direction** (employment / self-employment / neutral), a **strength** (strong / moderate / weak), the **evidence** it relied on, and whether there was enough information to assess it.
 
@@ -48,6 +64,8 @@ Each factor returns a **direction** (employment / self-employment / neutral), a 
 The band sits above the analysis rather than replacing it. The factor-by-factor reasoning is always shown.
 
 ---
+
+
 
 ## Key design decisions
 
@@ -65,6 +83,8 @@ A percentage implies precision the law does not support, and requires weighting 
 
 ---
 
+
+
 ## What testing showed
 
 **Contradiction detection initially failed.** The model correctly *identified* sham substitution clauses but still failed the gate, treating the clause as genuine. The prompt told the model to record contradictions but never said what a contradiction meant for the outcome. After I added an explicit rule that practice governs over the contract, the affected cases flipped to the correct result.
@@ -76,6 +96,8 @@ A percentage implies precision the law does not support, and requires weighting 
 **Reliability.** Every LLM call retries up to three times. If a response still can't be parsed, the tool degrades to a safe result (unclear gate, insufficient factor, or borderline band) instead of crashing the batch.
 
 ---
+
+
 
 ## Using the app
 
@@ -110,18 +132,24 @@ python app.py
 
 ---
 
+
+
 ## Project structure
 
-| File | Purpose |
-|---|---|
-| `app.py` | Gradio interface |
-| `assessment.py` | Data model, rule-based factors, LLM calls, pipeline and output formatting |
-| `prompts.py` | System prompts for each LLM call |
-| `law_content.py` | Legal content used within the prompts |
-| `examples.py` | Worked examples for the single-engagement form |
-| `*.csv` | Synthetic engagement data |
+
+| File             | Purpose                                                                   |
+| ---------------- | ------------------------------------------------------------------------- |
+| `app.py`         | Gradio interface                                                          |
+| `assessment.py`  | Data model, rule-based factors, LLM calls, pipeline and output formatting |
+| `prompts.py`     | System prompts for each LLM call                                          |
+| `law_content.py` | Legal content used within the prompts                                     |
+| `examples.py`    | Worked examples for the single-engagement form                            |
+| `*.csv`          | Synthetic engagement data                                                 |
+
 
 ---
+
+
 
 ## Limitations
 
@@ -132,6 +160,8 @@ python app.py
 - **Scope.** The tool assesses the hypothetical contract between worker and client. It does not model the off-payroll rules' allocation of responsibility or liability, and it is not a substitute for a Status Determination Statement.
 
 ---
+
+
 
 ## Built with
 
