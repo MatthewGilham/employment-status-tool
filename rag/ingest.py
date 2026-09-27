@@ -13,7 +13,7 @@ MODEL = "gpt-4.1-nano"
 DB_NAME = str(Path(__file__).parent.parent / "law_db")
 collection_name = "docs"
 embedding_model = "text-embedding-3-large"
-AVERAGE_CHUNK_SIZE = 500
+AVERAGE_CHUNK_SIZE = 1700
 
 openai = OpenAI()
 
@@ -45,7 +45,7 @@ documents = []
 for gate, text in LAW_BLOCKS.items():
     documents.append(Result(page_content=text.strip(), metadata={"gate": gate}))
 
-splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=150, add_start_index=True) #Add start index allows us to identify the first CHunk with a summary of the relevant law
+splitter = RecursiveCharacterTextSplitter(chunk_size=AVERAGE_CHUNK_SIZE, chunk_overlap=150, add_start_index=True) #Add start index allows us to identify the first CHunk with a summary of the relevant law
 chunks = splitter.split_documents(documents)
 
 def create_embeddings(chunks):

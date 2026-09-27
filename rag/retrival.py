@@ -32,15 +32,41 @@ def retrieve_law(query, gate, k=4): #Query is the facts to search with, Gate ref
     rule = collection.get(where={"$and": [{"gate": gate}, {"start_index": 0}]}) #Collection get fetches chunks by their labels, and means both conditions must match gate and start index
     rule_chunk = Result(page_content=rule["documents"][0], metadata=rule["metadatas"][0]) #Returns the first chunk
 
-    already_found = any(chunk.page_content == rule_chunk.page_content for chunk in chunks) 
-    if not already_found:
-        chunks.insert(0, rule_chunk)
+    chunks = [c for c in chunks if c.page_content != rule_chunk.page_content]
+    chunks.insert(0, rule_chunk)
     return chunks
 
 
 if __name__ == "__main__":
-    found = retrieve_law("the engager refused to accept a substitute", "personal_service")
-    print(len(found))
-    for chunk in found:
-        print(chunk.metadata)
+    tests = [
+        ("personal_service",
+         """Contract states a right of substitution: yes
+Right is fettered: no
+Who would pay a substitute: worker
+Account in practice: the worker once asked to send a substitute and the engager refused."""),
 
+        ("control",
+         """Who decides what work and what order: the engager
+Who decides how work is performed: the worker, as a skilled specialist
+Who sets the hours and location: the engager
+Report to a manager or not: no"""),
+
+        ("financial",
+         """Does defective work need correcting: yes, at the worker's own cost and in their own time
+Can they make a loss on engagement: yes, they quote a fixed price for the job"""),
+
+        ("organisation",
+         """Are they presented as part of the organisation: yes, company email address and on the staff list
+Do they have staff benefits or training: attends internal training, no holiday pay"""),
+
+        ("band",
+         """Factor: in business on own account. Direction: towards employment. Strength: strong.
+Factor: equipment. Direction: towards self-employment. Strength: weak.
+Factor: payment. Direction: towards employment. Strength: moderate."""),
+    ]
+
+    for gate, facts in tests:
+        print(f"\n===== {gate} =====")
+        for chunk in retrieve_law(facts, gate):
+            first_line = chunk.page_content.split("\n")[0]
+            print("  ", first_line[:90])
