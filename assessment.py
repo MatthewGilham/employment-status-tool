@@ -9,6 +9,8 @@ import pandas as pd
 from openai import OpenAI
 from dotenv import load_dotenv
 from rag.retrival import retrieve_law
+import law_content
+
 
 def format_law(chunks): #Formats the list of results objects of metadata and page content into a string which can be inserted into system prompt
     return "\n\n".join(chunk.page_content for chunk in chunks)
@@ -519,8 +521,8 @@ def band_facts(results):
 #Uses results from run function to provide an overall result
 def determine_band(results):
     facts = band_facts(results)
-    law = format_law(retrieve_law(facts, "band"))
-    system_prompt_band = prompts.system_prompt_band.format(law=law)
+    law = law_content.rmc_assess
+    system_prompt_band = prompts.system_prompt_band.format(law = law)
     messages = [{"role": "system", "content": system_prompt_band},
       {"role": "user", "content": facts}]
     last_error = None

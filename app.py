@@ -3,6 +3,8 @@ from assessment import *
 import examples
 import gradio as gr
 import styles
+import examples.examples
+
 
 def single_assess(
     substitution_clause,
@@ -130,7 +132,7 @@ with gr.Blocks(
 
         with gr.Accordion("Example inputs filled in:", open=False):
             gr.Examples(
-                examples=examples.single_examples,
+                examples=examples.examples.single_examples,
                 inputs=[
                     w_clause, w_fettered, w_attempted, w_subpay,
                     w_what, w_how, w_hours, w_manager,
@@ -163,4 +165,4 @@ with gr.Blocks(
         )
 
 if __name__ == "__main__":
-    ui.launch(theme=styles.PURPLE_THEME, css=styles.PURPLE_CSS)
+    ui.launch(theme=styles.PURPLE_THEME, css=styles.PURPLE_CSS, inbrowser=True)

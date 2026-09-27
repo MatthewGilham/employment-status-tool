@@ -9,11 +9,22 @@ from pathlib import Path
 
 load_dotenv(override=True)
 
+import os
+
+openrouter = OpenAI(
+       api_key=os.getenv("OPENROUTER_API_KEY"),
+       base_url="https://openrouter.ai/api/v1",
+   )
+
 MODEL = "gpt-4.1-nano"
 DB_NAME = str(Path(__file__).parent.parent / "law_db")
 collection_name = "docs"
-embedding_model = "text-embedding-3-large"
-AVERAGE_CHUNK_SIZE = 1700
+# embedding_model = "openai/text-embedding-3-large"
+embedding_model = "openai/text-embedding-3-small"   #Performed best relative to price
+# embedding_model = "voyageai/voyage-4-large"
+# embedding_model =  "google/gemini-embedding-2"
+AVERAGE_CHUNK_SIZE = 3000
+AVERAGE_CHUNK_OVERLAP = 300
 
 openai = OpenAI()
 
@@ -38,7 +49,6 @@ LAW_BLOCKS = {
     "control": law_content.rmc_control,
     "financial": law_content.rmc_financial,
     "organisation": law_content.rmc_organisation,
-    "band": law_content.rmc_assess,
 }
 
 documents = []
@@ -54,7 +64,7 @@ def create_embeddings(chunks):
         chroma.delete_collection(collection_name)
 
     texts = [chunk.page_content for chunk in chunks]
-    emb = openai.embeddings.create(model=embedding_model, input=texts).data
+    emb = openrouter.embeddings.create(model=embedding_model, input=texts).data
     vectors = [e.embedding for e in emb]
 
     collection = chroma.get_or_create_collection(collection_name)

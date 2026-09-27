@@ -4,20 +4,28 @@ from chromadb import PersistentClient
 from rag.ingest import DB_NAME, collection_name, embedding_model, Result
 from litellm import completion
 from pathlib import Path
+import os
+
+
 
 load_dotenv(override=True)
 
 openai = OpenAI()
+openrouter = OpenAI(
+       api_key=os.getenv("OPENROUTER_API_KEY"),
+       base_url="https://openrouter.ai/api/v1",
+   )
 
 chroma = PersistentClient(path=DB_NAME)
 collection = chroma.get_collection(collection_name)
+K = 5
 
 
 
 MODEL = "openai/gpt-4.1-nano"
 
-def retrieve_law(query, gate, k=4): #Query is the facts to search with, Gate refers to which gate/factors and k is number of chunks returned
-    query_vector = openai.embeddings.create(model=embedding_model, input=[query]).data[0].embedding #Model must put query facts into vectors to compare it in vector database
+def retrieve_law(query, gate, k=K, pin_rule=True): #Query is the facts to search with, Gate refers to which gate/factors and k is number of chunks returned
+    query_vector = openrouter.embeddings.create(model=embedding_model, input=[query]).data[0].embedding #Model must put query facts into vectors to compare it in vector database
 
     results = collection.query(
         query_embeddings=[query_vector],
@@ -29,11 +37,11 @@ def retrieve_law(query, gate, k=4): #Query is the facts to search with, Gate ref
     for text, metadata in zip(results["documents"][0], results["metadatas"][0]):
         chunks.append(Result(page_content=text, metadata=metadata))  #Chroma returns a dictionary with text and metadata in seperate lists  
     
-    rule = collection.get(where={"$and": [{"gate": gate}, {"start_index": 0}]}) #Collection get fetches chunks by their labels, and means both conditions must match gate and start index
-    rule_chunk = Result(page_content=rule["documents"][0], metadata=rule["metadatas"][0]) #Returns the first chunk
-
-    chunks = [c for c in chunks if c.page_content != rule_chunk.page_content]
-    chunks.insert(0, rule_chunk)
+    if pin_rule:
+        rule = collection.get(where={"$and": [{"gate": gate}, {"start_index": 0}]})
+        rule_chunk = Result(page_content=rule["documents"][0], metadata=rule["metadatas"][0])
+        chunks = [c for c in chunks if c.page_content != rule_chunk.page_content]
+        chunks.insert(0, rule_chunk)
     return chunks
 
 
@@ -59,10 +67,6 @@ Can they make a loss on engagement: yes, they quote a fixed price for the job"""
          """Are they presented as part of the organisation: yes, company email address and on the staff list
 Do they have staff benefits or training: attends internal training, no holiday pay"""),
 
-        ("band",
-         """Factor: in business on own account. Direction: towards employment. Strength: strong.
-Factor: equipment. Direction: towards self-employment. Strength: weak.
-Factor: payment. Direction: towards employment. Strength: moderate."""),
     ]
 
     for gate, facts in tests:
