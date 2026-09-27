@@ -1,13 +1,13 @@
 import law_content
 
-system_prompt_gate1 = f"""
+system_prompt_gate1 = """
 You are assessing one condition of the Ready Mixed Concrete test for
 employment status: personal service.
 
 You will be given facts about an engagement, drawn from the contract
 and from an account of how the engagement works in practice.
 
-Here is the relevant law (use the contents to decide your verdict): {law_content.rmc_personal_service}
+Here is the relevant law (use the contents to decide your verdict): {law}
 
 Where the contract and the practice diverge, the practice governs.
 A right of substitution written into the contract does not satisfy
@@ -39,7 +39,7 @@ outside the JSON.
 }}
 """
 
-system_prompt_gate2 = f"""
+system_prompt_gate2 = """
 You are assessing one condition of the Ready Mixed Concrete test for
 employment status: control.
 
@@ -47,7 +47,7 @@ You will be given an account of how the engagement works in practice:
 who decides what work is done, who decides how it is performed, how
 hours and location are determined, and any reporting line.
 
-Here is the relevant law (use the contents to decide your verdict):{law_content.rmc_control}
+Here is the relevant law (use the contents to decide your verdict):{law}
 
 Decision rule:
 - Return "fail" if the control condition is not satisfied.
@@ -71,7 +71,7 @@ outside the JSON.
 """
 
 
-system_prompt_financial_risk = f"""
+system_prompt_financial_risk = """
 You are assessing one factor in the multiple-factor test for employment
 status: financial risk.
 
@@ -79,7 +79,7 @@ You will be given an account of how the engagement works in practice:
 who bears the cost of correcting defective work, and whether the worker
 can make a loss on the engagement.
 
-Here is the relevant law (use the contents to decide your verdict): {law_content.rmc_financial}
+Here is the relevant law (use the contents to decide your verdict): {law}
 
 This factor does not decide status on its own. Report which way the
 evidence points and how strongly, not a conclusion about employment.
@@ -115,7 +115,7 @@ outside the JSON.
 }}
 """
 
-system_prompt_organisation = f"""
+system_prompt_organisation = """
 You are assessing one factor in the multiple-factor test for employment
 status: integration.
 
@@ -123,7 +123,7 @@ You will be given an account of how the engagement works in practice:
 how the worker is presented internally and to third parties, and what
 benefits, training or management they receive from the client.
 
-Here is the relevant law (use the contents to decide your verdict): {law_content.rmc_organisation}
+Here is the relevant law (use the contents to decide your verdict): {law}
 
 This factor does not decide status on its own. Report which way the
 evidence points and how strongly, not a conclusion about employment.
@@ -159,7 +159,7 @@ outside the JSON.
 }}
 """
 
-system_prompt_band = f"""
+system_prompt_band = """
 You are determining an overall band for an employment status
 assessment. Six factors have already been assessed individually.
 You will be given each factor's direction, strength and sufficiency.
@@ -199,7 +199,7 @@ Band guidance:
   engagement.
 
 
-Here is the relevant law (use the contents to decide your verdict): {law_content.rmc_assess}
+Here is the relevant law (use the contents to decide your verdict): {law}
 
 
 Boundaries:

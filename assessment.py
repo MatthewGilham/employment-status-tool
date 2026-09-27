@@ -8,6 +8,10 @@ from textwrap import dedent
 import pandas as pd
 from openai import OpenAI
 from dotenv import load_dotenv
+from rag.retrival import retrieve_law
+
+def format_law(chunks): #Formats the list of results objects of metadata and page content into a string which can be inserted into system prompt
+    return "\n\n".join(chunk.page_content for chunk in chunks)
 
 #Enums used for choices
 class EquipmentProvider(str, Enum):
@@ -337,9 +341,15 @@ Account of substitution in practice:
 
 #API call out for gate 1 personal service result, uses relevant law from law_content.py and detailed prompt from prompts.py
 def assess_gate_1(engagement):
-    system_prompt_gate1 = prompts.system_prompt_gate1
+    facts = gate_1_facts(engagement) #Gets gate 1 facts
+    law = format_law(retrieve_law(facts, "personal_service")) 
+    # ^ Feeds facts and gate name into retrive law which then turns this piece of information into a vector and looks for similar chunks 
+    # which it feeds into format law which then feeds into the system prompt
+    # The gate name limits the vector search to the relevant gate law
+    system_prompt_gate1 = prompts.system_prompt_gate1.format(law=law)
+    print(system_prompt_gate1[:1500])
     messages_gate1 = [{"role": "system", "content": system_prompt_gate1},
-      {"role": "user", "content": gate_1_facts(engagement)}]
+      {"role": "user", "content": facts}]
     last_error = None
     for attempt in range(3):
         try:      
@@ -376,9 +386,11 @@ Report to a manager or not:{engagement.report_to_a_manager}
 """
 #API call out for gate 2 control test result, uses relevant law from law_content.py and detailed prompt from prompts.py
 def assess_gate_2(engagement):
-    system_prompt_gate2 = prompts.system_prompt_gate2
+    facts = gate_2_facts(engagement)
+    law = format_law(retrieve_law(facts, "control"))
+    system_prompt_gate2 = prompts.system_prompt_gate2.format(law=law)
     messages_gate2 = [{"role": "system", "content": system_prompt_gate2},
-      {"role": "user", "content": gate_2_facts(engagement)}]
+      {"role": "user", "content": facts}]
     last_error = None
     for attempt in range(3):
         try:
@@ -412,9 +424,11 @@ def factor_financial_facts(engagement):
     """
 #API call for assessing financial risk factor
 def assess_factor_financial(engagement):
-    system_prompt_financial_risk = prompts.system_prompt_financial_risk
+    facts = factor_financial_facts(engagement)
+    law = format_law(retrieve_law(facts, "financial"))
+    system_prompt_financial_risk = prompts.system_prompt_financial_risk.format(law=law)
     messages_factor_financial = [{"role": "system", "content": system_prompt_financial_risk},
-      {"role": "user", "content": factor_financial_facts(engagement)}]
+      {"role": "user", "content": facts}]
     last_error = None
     for attempt in range(3):
         try:
@@ -451,10 +465,12 @@ def factor_organisation_facts(engagement):
 
 #API call for organisation factor 
 def assess_factor_organisation(engagement):
-    system_prompt_organisation = prompts.system_prompt_organisation
+    facts = factor_organisation_facts(engagement)
+    law = format_law(retrieve_law(facts, "organisation"))
+    system_prompt_organisation = prompts.system_prompt_organisation.format(law=law)
     messages_factor_organisation = [
         {"role": "system", "content": system_prompt_organisation},
-        {"role": "user", "content": factor_organisation_facts(engagement)}
+        {"role": "user", "content": facts}
     ]
     last_error = None
     for attempt in range(3):
@@ -502,9 +518,11 @@ def band_facts(results):
 
 #Uses results from run function to provide an overall result
 def determine_band(results):
-    system_prompt_band = prompts.system_prompt_band
+    facts = band_facts(results)
+    law = format_law(retrieve_law(facts, "band"))
+    system_prompt_band = prompts.system_prompt_band.format(law=law)
     messages = [{"role": "system", "content": system_prompt_band},
-      {"role": "user", "content": band_facts(results)}]
+      {"role": "user", "content": facts}]
     last_error = None
     for attempt in range(3):
         try:
