@@ -18,7 +18,7 @@ openrouter = OpenAI(
 
 chroma = PersistentClient(path=DB_NAME)
 collection = chroma.get_collection(collection_name)
-K = 5
+K = 4
 
 
 

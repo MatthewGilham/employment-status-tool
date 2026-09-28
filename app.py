@@ -83,7 +83,7 @@ with gr.Blocks(
         file_in = gr.File(label="Upload your enagagements CSV", type="filepath")
         with gr.Accordion("Example datasheets:", open=False):
             gr.Examples(
-                examples=[["dataset_example_5.csv"], ["dataset_example_3.csv"]],
+                examples=[["examples/dataset_example_5.csv"], ["examples/dataset_example_3.csv"]],
                 inputs=file_in,
                 example_labels = ["Dataset 1", "Dataset 2"]
                 )
