@@ -22,7 +22,7 @@ K = 4
 
 
 
-MODEL = "openai/gpt-4.1-nano"
+MODEL = "openai/gpt-6-luna"
 
 def retrieve_law(query, gate, k=K, pin_rule=True): #Query is the facts to search with, Gate refers to which gate/factors and k is number of chunks returned
     query_vector = openrouter.embeddings.create(model=embedding_model, input=[query]).data[0].embedding #Model must put query facts into vectors to compare it in vector database
