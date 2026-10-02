@@ -6,6 +6,10 @@ It takes the facts of an engagement, runs them through a structured legal framew
 
 The legal content each AI call relies on is selected by retrieval (RAG), and the AI-assessed parts are measured by an evaluation suite of 80 test cases.
 
+
+![The app assessing an engagement, with the banded conclusion and factor-by-factor reasoning](docs/app.png)
+
+
 > **This is a demonstration project, not legal or tax advice.** Real status determinations need professional judgement on the full facts. All test data is synthetic.
 
 ---
